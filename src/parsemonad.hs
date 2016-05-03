@@ -19,3 +19,44 @@ spaces = skipMany1 space
 
 comp :: Stream s m Char => ParsecT s u m Char
 comp = spaces >> symbol
+
+
+data LispVal = Atom String
+             | List [LispVal]
+             | DottedList [LispVal] LispVal
+             | Number Integer
+             | String String
+             | Bool Bool
+             deriving (Show)
+
+parseString :: Stream s m Char => ParsecT s u m LispVal
+parseString = do char '"'
+                 x <- many (noneOf "\"")
+                 char '"'
+                 return $ String x
+
+parseAtom :: Stream s m Char => ParsecT s u m LispVal
+parseAtom = do first <- letter <|> symbol
+               rest <- many (letter <|> digit <|> symbol)
+               let atom = [first] ++ rest
+               return $ case atom of
+                          "#t" -> Bool True
+                          "#f" -> Bool False
+                          otherwise -> Atom atom
+
+-- note: should use many1, rather than many
+parseNumber :: Stream s m Char => ParsecT s u m LispVal
+parseNumber = do char '"'
+                 x <- many1 digit
+                 char '"'
+                 return $ Number (read x)
+
+-- learn liftM!!!
+-- liftM :: Monad m => (a1 -> r) -> m a1 -> m r
+parseNumber2 :: Stream s m Char => ParsecT s u m LispVal
+parseNumber2 = liftM (Number . read)  (many1 digit)
+
+parseExpr :: Stream s m Char => ParsecT s u m LispVal
+parseExpr = parseAtom <|> parseString <|> parseNumber
+
+
