@@ -46,9 +46,7 @@ parseAtom = do first <- letter <|> symbol
 
 -- note: should use many1, rather than many
 parseNumber :: Stream s m Char => ParsecT s u m LispVal
-parseNumber = do char '"'
-                 x <- many1 digit
-                 char '"'
+parseNumber = do x <- many1 digit
                  return $ Number (read x)
 
 -- learn liftM!!!
