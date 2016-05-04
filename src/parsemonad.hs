@@ -1,4 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
+import Test.QuickCheck
+
 import Control.Monad
 import Control.Monad.Identity (Identity)
 import System.Environment (getArgs)
@@ -58,3 +60,6 @@ parseExpr :: Stream s m Char => ParsecT s u m LispVal
 parseExpr = parseAtom <|> parseString <|> parseNumber
 
 
+-- try quickCheck
+prop_reverse :: Eq a => [a] -> [a] -> Bool
+prop_reverse x y = reverse (x++y) == (reverse y) ++ (reverse x)
