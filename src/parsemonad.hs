@@ -59,6 +59,8 @@ parseNumber2 = liftM (Number . read)  (many1 digit)
 parseExpr :: Stream s m Char => ParsecT s u m LispVal
 parseExpr = parseAtom <|> parseString <|> parseNumber
 
+parseList :: Stream s m Char => ParsecT s u m LispVal
+parseList = liftM List $ sepBy parseExpr spaces
 
 -- try quickCheck
 prop_reverse :: Eq a => [a] -> [a] -> Bool
