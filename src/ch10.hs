@@ -8,6 +8,11 @@ import Data.Char (isSpace)
 
 import qualified Data.ByteString.Internal as BI (c2w, w2c)
 
+-- PMG image format:
+--   P5 width height maxGreyValue greyValueList
+-- ref: http://netpbm.sourceforge.net/doc/pgm.html
+-- hexdump usage example:  http://blog.csdn.net/zybasjj/article/details/7874720
+
 data Greymap = Greymap {
       greyWidth :: Int
     , greyHeight :: Int
