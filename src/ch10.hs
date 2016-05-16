@@ -3,9 +3,6 @@
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.ByteString.Lazy as L
 
-import qualified Data.ByteString.Base16 as B16
-import qualified Data.ByteString.Base64 as B64
-
 
 import Data.Char (isSpace)
 
@@ -24,13 +21,28 @@ instance Show Greymap where
 
 
 parseP5 :: L.ByteString -> Maybe (Greymap, L.ByteString)
-parseP5 = undefined
-
-bytes = B64.decode "SSdtIGEgYmFzZTY0IGVuY29kZWQgQnl0ZVN0cmluZw=="
-main = print bytes
-
-encode_bytes_64 = B64.encode "I'm a base64 encoded ByteString"
-encode_bytes_16 = B16.encode "I'm a base16 encoded ByteString"
+parseP5 s =
+  case matchHeader (L8.pack "P5") s of
+    Nothing -> Nothing
+    Just s1 ->
+      case getNat s1 of
+        Nothing -> Nothing
+        Just (width, s2) ->
+          case getNat (L8.dropWhile isSpace s2) of
+            Nothing -> Nothing
+            Just (height, s3) ->
+              case getNat (L8.dropWhile isSpace s3) of
+                Nothing -> Nothing
+                Just (maxGrey, s4)
+                  | maxGrey > 255 -> Nothing
+                  | otherwise ->
+                      case getBytes 1 s4 of
+                        Nothing -> Nothing
+                        Just (_, s5) ->
+                          case getBytes (width * height) s5 of
+                            Nothing -> Nothing
+                            Just (bitmap, s6) ->
+                              Just (Greymap width height maxGrey bitmap, s6)
 
 matchHeader :: L.ByteString -> L.ByteString -> Maybe L.ByteString
 matchHeader prefix str
@@ -56,9 +68,3 @@ getBytes n str = let count           = fromIntegral n
 (>>?) :: Maybe a -> (a -> Maybe b) -> Maybe b
 Nothing >>? _ = Nothing
 Just v  >>? f = f v
-
--- test
--- bytestring_a = L.pack "asdf"
-bs_a = L8.pack "I'm a ByteString, not a [Char]"
-bs_a_Char = L8.unpack bs_a      -- show as char
-bs_a_Word8 = L.unpack bs_a      -- show as pure ascii code
