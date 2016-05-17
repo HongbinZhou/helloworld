@@ -49,6 +49,13 @@ parseP5 s =
                             Just (bitmap, s6) ->
                               Just (Greymap width height maxGrey bitmap, s6)
 
+-- load a pgm file
+img :: IO L.ByteString
+img = L8.readFile "./src/IMG_1761.pgm"
+
+test_parseP5 :: IO (Maybe (Greymap, L.ByteString))
+test_parseP5 = parseP5 <$> img
+
 matchHeader :: L.ByteString -> L.ByteString -> Maybe L.ByteString
 matchHeader prefix str
     | prefix `L8.isPrefixOf` str
